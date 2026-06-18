@@ -1,0 +1,24 @@
+---
+import cn from "@/lib/cn.ts";
+
+interface Props {
+    type: string;
+    name: string;
+    href: string;
+    imageUrl?: string;
+    class?: string;
+}
+
+const { type, name, href, class: className } = Astro.props;
+---
+
+<a
+    class:list={cn(
+        "flex h-24 flex-col justify-end rounded-xl p-2 transition duration-150 hover:scale-105",
+        className,
+    )}
+    href={href}
+>
+    <p class="text-sm text-muted">{type}</p>
+    <p class="font-bold">{name}</p>
+</a>

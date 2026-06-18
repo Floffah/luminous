@@ -1,0 +1,25 @@
+diff --git a/dist/core/config/vite-load.js b/dist/core/config/vite-load.js
+index bccfd1b0db22c19242824c8320553bd72a2b91c6..8a15dd7a6b1300136ef5e6dfbcd255bc345274c6 100644
+--- a/dist/core/config/vite-load.js
++++ b/dist/core/config/vite-load.js
+@@ -4,6 +4,8 @@ import loadFallbackPlugin from "../../vite-plugin-load-fallback/index.js";
+ import { debug } from "../logger/core.js";
+ import { ASTRO_VITE_ENVIRONMENT_NAMES } from "../constants.js";
+ import { createMinimalViteDevServer } from "../createMinimalViteDevServer.js";
++import configAliasVitePlugin from '../../vite-plugin-config-alias/index.js';
++import { loadTSConfig } from './tsconfig.js';
+ async function loadConfigWithVite({
+   configPath,
+   fs,
+@@ -20,9 +22,11 @@ async function loadConfigWithVite({
+       debug("Failed to load config with Node", e);
+     }
+   }
++  const tsConfig = await loadTSConfig(root);
+   let server;
+   try {
+     const plugins = loadFallbackPlugin({ fs, root: pathToFileURL(root) });
++    plugins.push(configAliasVitePlugin({ settings: { tsConfig: tsConfig.tsconfig, tsConfigPath: tsConfig.tsconfigFile } }))
+     server = await createMinimalViteDevServer(plugins);
+     if (isRunnableDevEnvironment(server.environments[ASTRO_VITE_ENVIRONMENT_NAMES.ssr])) {
+       const environment = server.environments[ASTRO_VITE_ENVIRONMENT_NAMES.ssr];

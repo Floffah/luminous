@@ -6,7 +6,8 @@
 
     --color-background: var(--color-indigo-950);
     --color-foreground: var(--color-white);
-    --color-muted: var(--color-slate-300)
+    --color-muted: var(--color-slate-300);
+    --color-card: var(--color-indigo-900);
 }
 
 @layer components {

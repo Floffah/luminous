@@ -1,10 +1,10 @@
 set shell := ["nu", "-c"]
 
-mod wiki
+mod site
 
 [parallel]
-dev: wiki::dev
+dev: site::dev
 
-build: wiki::build
+build: site::build
 
-preview: wiki::preview
+preview: site::preview

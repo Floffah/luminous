@@ -1,0 +1,48 @@
+---
+import { getCollection, render } from "astro:content";
+
+import Footer from "@/components/Footer.astro";
+import SiteAside from "@/components/SiteAside.astro";
+import Layout from "@/layouts/Layout.astro";
+
+export async function getStaticPaths() {
+    const posts = await getCollection("docs");
+    return posts.map((doc) => ({
+        params: { id: doc.id },
+        props: { doc },
+    }));
+}
+
+const { doc } = Astro.props;
+
+if (!doc) {
+    return new Response(null, { status: 404 });
+}
+
+const { Content } = await render(doc);
+---
+
+<Layout
+    title={doc.data.title}
+    description={doc.data.description}
+    imageUrl={doc.data.coverImageUrl}
+    openGraphType="article"
+    section={doc.data.type}
+    tags={doc.data.tags}
+>
+    <div class="flex flex-col gap-5 p-5">
+        <div class="flex min-h-screen flex-col gap-5 lg:flex-row">
+            <SiteAside
+                coverImageUrl={doc.data.coverImageUrl}
+                class="min-h-64 flex-1 lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)]"
+            />
+            <main class="flex-1">
+                <article class="prose max-w-none prose-invert">
+                    <Content />
+                </article>
+            </main>
+        </div>
+
+        <Footer />
+    </div>
+</Layout>

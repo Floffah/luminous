@@ -1,11 +1,25 @@
+use serde::Serialize;
 use typst::diag::{FileError, FileResult, SourceDiagnostic};
-use typst::foundations::{Bytes, Datetime, Duration};
+use typst::foundations::{Bytes, Datetime, Duration, Label, Selector, Value};
+use typst::introspection::{Introspector, MetadataElem};
 use typst::syntax::{FileId, RootedPath, Source, VirtualPath, VirtualRoot};
 use typst::text::{Font, FontBook};
-use typst::utils::LazyHash;
+use typst::utils::{LazyHash, PicoStr};
 use typst::{Feature, Features, Library, LibraryExt, World};
 use typst_html::{HtmlDocument, HtmlOptions};
 use wasm_bindgen::prelude::*;
+
+const ASTRO_METADATA_LABEL: &str = "astro-content-metadata";
+const ASTRO_METADATA_DEFAULT: &str = "#let astro = (:)\n";
+const ASTRO_METADATA_PROBE: &str = r#"
+#metadata(json.encode(astro)) <astro-content-metadata>
+"#;
+
+#[derive(Debug, PartialEq, Serialize)]
+pub struct CompiledTypst {
+    pub html: String,
+    pub metadata: serde_json::Value,
+}
 
 /// Compile a self-contained Typst source string to an embeddable HTML fragment.
 ///
@@ -14,18 +28,74 @@ use wasm_bindgen::prelude::*;
 /// Typst can render constructs that fall back to frames.
 pub fn render_html(input: &str) -> Result<String, String> {
     let world = InMemoryWorld::new(input);
-    let compiled = typst::compile::<HtmlDocument>(&world);
-    let document = compiled.output.map_err(format_diagnostics)?;
+    let document = compile_document(&world)?;
 
-    let document =
-        typst_html::html(&document, &HtmlOptions::default()).map_err(format_diagnostics)?;
+    render_document(&document)
+}
 
-    body_fragment(document)
+/// Compile Typst and extract the metadata Astro needs for a content entry.
+///
+/// The source may define an `astro` variable containing any JSON-compatible
+/// value. It defaults to an empty dictionary. Astro's collection schema is
+/// responsible for validating the resulting metadata.
+pub fn compile_content(input: &str) -> Result<CompiledTypst, String> {
+    let source = format!("{ASTRO_METADATA_DEFAULT}{input}\n{ASTRO_METADATA_PROBE}");
+    let world = InMemoryWorld::new(&source);
+    let document = compile_document(&world)?;
+    let metadata = extract_metadata(&document)?;
+    let html = render_document(&document)?;
+
+    Ok(CompiledTypst { html, metadata })
+}
+
+fn compile_document(world: &InMemoryWorld) -> Result<HtmlDocument, String> {
+    typst::compile::<HtmlDocument>(world)
+        .output
+        .map_err(format_diagnostics)
+}
+
+fn render_document(document: &HtmlDocument) -> Result<String, String> {
+    let html = typst_html::html(document, &HtmlOptions::default()).map_err(format_diagnostics)?;
+
+    body_fragment(html)
+}
+
+fn extract_metadata(document: &HtmlDocument) -> Result<serde_json::Value, String> {
+    let label = Label::new(PicoStr::intern(ASTRO_METADATA_LABEL))
+        .expect("the Astro metadata label is not empty");
+    let mut matches = document
+        .introspector()
+        .query(&Selector::Label(label))
+        .into_iter();
+    let content = matches
+        .next()
+        .ok_or_else(|| "Typst did not emit Astro content metadata".to_owned())?;
+
+    if matches.next().is_some() {
+        return Err("Typst emitted more than one Astro content metadata value".to_owned());
+    }
+
+    let metadata = content
+        .unpack::<MetadataElem>()
+        .map_err(|_| "Astro content metadata had an unexpected Typst element".to_owned())?;
+    let json = match metadata.value {
+        Value::Str(value) => value.to_string(),
+        _ => return Err("Astro content metadata was not encoded as JSON".to_owned()),
+    };
+
+    serde_json::from_str(&json).map_err(|error| format!("invalid Astro content metadata: {error}"))
 }
 
 #[wasm_bindgen(js_name = typstToHtml)]
 pub fn typst_to_html(input: &str) -> Result<String, JsError> {
     render_html(input).map_err(|message| JsError::new(&message))
+}
+
+/// Compile a Typst content entry and return `{ html, metadata }` as JSON.
+#[wasm_bindgen(js_name = typstToHtmlWithMetadata)]
+pub fn typst_to_html_with_metadata(input: &str) -> Result<String, JsError> {
+    let compiled = compile_content(input).map_err(|message| JsError::new(&message))?;
+    serde_json::to_string(&compiled).map_err(|error| JsError::new(&error.to_string()))
 }
 
 struct InMemoryWorld {
@@ -147,7 +217,7 @@ pub fn set_panic_hook() {
 
 #[cfg(test)]
 mod tests {
-    use super::render_html;
+    use super::{compile_content, render_html};
 
     #[test]
     fn renders_typst_as_html() {
@@ -165,6 +235,37 @@ mod tests {
         let error = render_html("#let broken =").unwrap_err();
 
         assert!(!error.is_empty());
+    }
+
+    #[test]
+    fn compiles_html_and_extracts_content_metadata() {
+        let compiled = compile_content(
+            r#"#let astro = (
+  title: "A luminous page",
+  tags: ("typst", "astro"),
+  type: "guide",
+  description: "Compile once, use twice.",
+  nested: (draft: false, priority: 2),
+)
+
+= Hello"#,
+        )
+        .unwrap();
+
+        assert!(compiled.html.contains("Hello"), "{}", compiled.html);
+        assert_eq!(compiled.metadata["title"], "A luminous page");
+        assert_eq!(compiled.metadata["tags"][1], "astro");
+        assert_eq!(compiled.metadata["type"], "guide");
+        assert_eq!(compiled.metadata["description"], "Compile once, use twice.");
+        assert_eq!(compiled.metadata["nested"]["draft"], false);
+        assert_eq!(compiled.metadata["nested"]["priority"], 2);
+    }
+
+    #[test]
+    fn defaults_content_metadata_to_an_empty_object() {
+        let compiled = compile_content("= No metadata").unwrap();
+
+        assert_eq!(compiled.metadata, serde_json::json!({}));
     }
 }
 use std::sync::OnceLock;
