@@ -1,0 +1,17 @@
+{
+  "name": "typst-wasm",
+  "type": "module",
+  "collaborators": [
+    "Floffah <floffah@floffah.dev>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/typst_wasm.js",
+  "types": "dist/typst_wasm.d.ts",
+  "sideEffects": [
+    "./dist/typst_wasm.js",
+    "./dist/snippets/*"
+  ]
+}

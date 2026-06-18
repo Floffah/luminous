@@ -1,0 +1,4 @@
+set shell := ["nu", "-c"]
+
+build:
+	wasm-pack build --release --target bundler --out-dir dist --no-pack

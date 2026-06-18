@@ -1,0 +1,40 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+    --font-sans: var(--font-sans);
+
+    --color-background: var(--color-indigo-950);
+    --color-foreground: var(--color-white);
+    --color-muted: var(--color-slate-300)
+}
+
+@layer components {
+    .heading-inset {
+        position: relative;
+    }
+
+    .heading-inset::before,
+    .heading-inset::after {
+        position: absolute;
+        width: 0.75rem;
+        height: 0.75rem;
+        pointer-events: none;
+        content: "";
+        background: radial-gradient(
+                circle at 100% 100%,
+                transparent 0.75rem,
+                var(--color-background) calc(0.75rem + 1px)
+        );
+    }
+
+    .heading-inset::before {
+        top: 0;
+        right: -0.75rem;
+    }
+
+    .heading-inset::after {
+        bottom: -0.75rem;
+        left: 0;
+    }
+}
