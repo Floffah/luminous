@@ -37,7 +37,14 @@ jobs:
         with:
           # Optional version of wasm-pack to install(eg. 'v0.9.1', 'latest')
           version: 'latest'
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+      - uses: fontist/setup-fontist@v2
+      - run: fontist install --formula "google/source_sans_3"
       - run: just docs::build
+        env:
+          TYPST_FONT_PATHS: /home/runner/.fontist/fonts
       - name: Install, build, and upload your site
         uses: withastro/action@v5
         with:
