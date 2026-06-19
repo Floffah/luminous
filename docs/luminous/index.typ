@@ -2,7 +2,6 @@
 	title: "Luminous",
 	description: "The self-sovereign nation, Luminous.",
 	type: "Location",
-	aliases: ("The Luminous Ring",),
 	coverImageUrl: "https://images.unsplash.com/photo-1780336473595-9e1c3c990ca0"
 )
 
@@ -14,7 +13,7 @@ The polity originated as a controlled off-world settlement created to isolate an
 
 Luminous sustains itself through closed, internally managed systems that do not depend on Earth-based markets, labour structures, or resource extraction. Material production, infrastructure maintenance, and energy generation are handled within its own jurisdiction, allowing residents to disengage from scarcity-driven economic participation. Residency in Luminous is not framed as a right, programme, or migration pathway, and there is no open or scalable process for admission.
 
-Individuals residing in Luminous are permitted to maintain personal and familial contact with Earth, including limited physical visits. However, residents do not retain employment, political participation, or economic activity within Earth systems, and their withdrawal from terrestrial governance is legally clean and final. Luminous does not recruit, advertise, or promote residency, and has consistently stated that it does not seek population growth or expansion.
+Residents can keep personal and family contact with people on Earth. Public bodies permit a small number of physical visits. Residents cannot retain Earth employment, political roles, or financial activity. Luminous does not advertise residency or seek population growth.
 
 Governance within Luminous is structured around internal procedural mechanisms designed to prioritise safety, ethical review, and long-term stability. Decision-making processes are deliberately conservative, particularly in relation to external interaction, technological deployment, and population policy. The polity maintains formal channels of communication with  Earth governments but avoids public engagement, diplomatic representation, or narrative framing.
 

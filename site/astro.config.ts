@@ -6,6 +6,8 @@ import { defineConfig, fontProviders } from "astro/config";
 
 import { renderTypst } from "@/lib/typst.ts";
 
+import sitemap from "@astrojs/sitemap";
+
 // https://astro.build/config
 export default defineConfig({
     site: "https://floffah.github.io",
@@ -45,5 +47,5 @@ export default defineConfig({
         service: imageService(),
     },
 
-    integrations: [react()],
+    integrations: [react(), sitemap()],
 });
