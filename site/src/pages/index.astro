@@ -6,7 +6,8 @@ import Layout from "@/layouts/Layout.astro";
 
 import homepage from "./index.typ";
 
-const docUrl = (id: string) => `${import.meta.env.BASE_URL}d/${id}`;
+const docUrl = (id: string) =>
+    `${import.meta.env.BASE_URL.replace(/\/$/, "")}d/${id}`;
 ---
 
 <Layout>
