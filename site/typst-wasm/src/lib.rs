@@ -6,7 +6,7 @@ use typst::syntax::{FileId, RootedPath, Source, VirtualPath, VirtualRoot};
 use typst::text::{Font, FontBook};
 use typst::utils::{LazyHash, PicoStr};
 use typst::{Feature, Features, Library, LibraryExt, World};
-use typst_html::{HtmlDocument, HtmlOptions};
+use typst_html::{attr, tag, HtmlDocument, HtmlElement, HtmlNode, HtmlOptions};
 use wasm_bindgen::prelude::*;
 
 const ASTRO_METADATA_LABEL: &str = "astro-content-metadata";
@@ -55,9 +55,46 @@ fn compile_document(world: &InMemoryWorld) -> Result<HtmlDocument, String> {
 }
 
 fn render_document(document: &HtmlDocument) -> Result<String, String> {
-    let html = typst_html::html(document, &HtmlOptions::default()).map_err(format_diagnostics)?;
+    let mut document = document.clone();
+    restore_typst_heading_levels(document.root_mut());
+    let html = typst_html::html(&document, &HtmlOptions::default()).map_err(format_diagnostics)?;
 
     body_fragment(html)
+}
+
+/// Typst offsets HTML headings by one because it reserves `<h1>` for the
+/// document title. These documents are embedded as content fragments, where a
+/// level-one Typst heading is the page's level-one heading, so undo the offset
+/// before serializing the DOM.
+fn restore_typst_heading_levels(element: &mut HtmlElement) {
+    element.tag = match element.tag {
+        tag::h2 => tag::h1,
+        tag::h3 => tag::h2,
+        tag::h4 => tag::h3,
+        tag::h5 => tag::h4,
+        tag::h6 => tag::h5,
+        tag => tag,
+    };
+
+    let is_heading = element
+        .attrs
+        .get(attr::role)
+        .is_some_and(|role| role.as_str() == "heading");
+    if is_heading {
+        if let Some(level) = element.attrs.get_mut(attr::aria_level) {
+            if let Ok(level_number) = level.as_str().parse::<usize>() {
+                if level_number > 1 {
+                    *level = (level_number - 1).to_string().into();
+                }
+            }
+        }
+    }
+
+    for child in element.children.make_mut().iter_mut() {
+        if let HtmlNode::Element(child) = child {
+            restore_typst_heading_levels(child);
+        }
+    }
 }
 
 fn extract_metadata(document: &HtmlDocument) -> Result<serde_json::Value, String> {
@@ -225,9 +262,35 @@ mod tests {
 
         assert!(!html.contains("<!DOCTYPE html>"));
         assert!(!html.contains("<body"));
-        assert!(html.contains("<h2"), "{}", html);
+        assert!(html.contains("<h1"), "{}", html);
         assert!(html.contains("Hello"), "{}", html);
         assert!(html.contains("<strong>Typst</strong>"), "{}", html);
+    }
+
+    #[test]
+    fn preserves_typst_heading_depths_in_html() {
+        let html = render_html(
+            "= One\n== Two\n=== Three\n==== Four\n===== Five\n====== Six\n======= Seven",
+        )
+        .unwrap();
+
+        for (level, text) in (1..=5).zip(["One", "Two", "Three", "Four", "Five"]) {
+            assert!(
+                html.contains(&format!("<h{level}>{text}</h{level}>")),
+                "{}",
+                html
+            );
+        }
+        assert!(
+            html.contains("<div role=\"heading\" aria-level=\"6\">Six</div>"),
+            "{}",
+            html
+        );
+        assert!(
+            html.contains("<div role=\"heading\" aria-level=\"7\">Seven</div>"),
+            "{}",
+            html
+        );
     }
 
     #[test]

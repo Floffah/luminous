@@ -73,7 +73,7 @@ const svgFaviconUrl = `${import.meta.env.BASE_URL}favicon.svg`;
                 tags.map((tag) => <meta property="article:tag" content={tag} />)
         }
 
-        <Font cssVariable="--font-sans" />
+        <Font cssVariable="--font-sans" preload />
         <title>{pageTitle}</title>
     </head>
     <body class="flex min-h-full flex-col font-sans">

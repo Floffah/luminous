@@ -5,6 +5,8 @@ import type { Loader } from "astro/loaders";
 
 import { compileTypst } from "@/lib/typst.ts";
 
+import { typstEntryId } from "./typst-path.ts";
+
 export interface TypstLoaderOptions {
     base?: string;
 }
@@ -32,7 +34,7 @@ export function typstLoader({
                 const entryPath = toPosixPath(relative(basePath, filePath));
                 if (!isTypstEntry(entryPath)) return;
 
-                const id = entryPath.slice(0, -".typ".length);
+                const id = typstEntryId(entryPath);
                 const source = await readFile(filePath, "utf8");
                 const digest = generateDigest(source);
                 const existing = store.get(id);
@@ -98,7 +100,15 @@ export function typstLoader({
                 const entryPath = toPosixPath(relative(basePath, filePath));
                 if (!isTypstEntry(entryPath)) return;
 
-                store.delete(entryPath.slice(0, -".typ".length));
+                const id = typstEntryId(entryPath);
+                const storedFilePath = store.get(id)?.filePath;
+                const removedFilePath = toPosixPath(
+                    relative(rootPath, filePath),
+                );
+
+                if (storedFilePath === removedFilePath) {
+                    store.delete(id);
+                }
             });
         },
     };

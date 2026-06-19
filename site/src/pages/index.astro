@@ -14,7 +14,7 @@ const docUrl = (id: string) => `${import.meta.env.BASE_URL}d/${id}`;
         <div class="flex min-h-screen flex-col gap-5 lg:flex-row">
             <div class="flex flex-1 flex-col gap-5">
                 <SiteAside class="h-48" />
-                <article class="prose prose-invert">
+                <article class="prose prose-sm prose-invert">
                     <Fragment set:html={homepage} />
                 </article>
             </div>
@@ -36,43 +36,43 @@ const docUrl = (id: string) => `${import.meta.env.BASE_URL}d/${id}`;
                     <DocCard
                         type="Card"
                         name="Emergence"
-                        href={docUrl("emergence")}
+                        href={docUrl("luminous/emergence")}
                         class="row-span-3 h-auto bg-indigo-400/80"
                     />
                     <DocCard
                         type="Card"
                         name="Haven"
-                        href={docUrl("haven")}
+                        href={docUrl("luminous/haven")}
                         class="bg-indigo-400/80"
                     />
                     <DocCard
                         type="Card"
                         name="Solace"
-                        href={docUrl("solace")}
+                        href={docUrl("luminous/solace")}
                         class="bg-indigo-400/80"
                     />
                     <DocCard
                         type="Card"
                         name="Arden"
-                        href={docUrl("arden")}
+                        href={docUrl("luminous/arden")}
                         class="bg-indigo-400/80"
                     />
                     <DocCard
                         type="Card"
                         name="Lowtide"
-                        href={docUrl("lowtide")}
+                        href={docUrl("luminous/lowtide")}
                         class="bg-indigo-400/80"
                     />
                     <DocCard
                         type="Card"
                         name="Kera"
-                        href={docUrl("kera")}
+                        href={docUrl("luminous/kera")}
                         class="bg-indigo-400/80"
                     />
                     <DocCard
                         type="Card"
                         name="Vale"
-                        href={docUrl("vale")}
+                        href={docUrl("luminous/vale")}
                         class="bg-indigo-400/80"
                     />
                 </nav>

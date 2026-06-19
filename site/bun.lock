@@ -11,6 +11,7 @@
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
         "astro": "^6.4.7",
+        "lucide-react": "^1.21.0",
         "lucide-static": "^1.21.0",
         "radix-ui": "^1.6.0",
         "react": "^19.2.7",
@@ -705,6 +706,8 @@
     "longest-streak": ["longest-streak@3.1.0", "", {}, "sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g=="],
 
     "lru-cache": ["lru-cache@11.5.1", "", {}, "sha512-RPimw/7aMdv2oqRrxKwvZXcPfwBrn/JZ2xYcY9Hus/6LaS3VOAKVWKWgNLCFSiOm1ESXinjsDlidVU7JlnCN2A=="],
+
+    "lucide-react": ["lucide-react@1.21.0", "", { "peerDependencies": { "react": "^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-reEZMXq8Qdd5jg5XYkQ5TR1fB/GiQ7ih4vcrthYDtgjSDwh0i6/YLiGjsWsIwgN49gpAnd4J2elSNzncMEEUUQ=="],
 
     "lucide-static": ["lucide-static@1.21.0", "", {}, "sha512-6248z2/4sEyKkYAPPUYxOPiB2RCfMmLdMHuoOhsTFnoD40ixAoHmTVhOPux8ADa1NTBmzpEKF7WNePm+Ms503Q=="],
 

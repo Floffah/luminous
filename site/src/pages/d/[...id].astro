@@ -20,6 +20,8 @@ if (!doc) {
 }
 
 const { Content, headings } = await render(doc);
+
+const outlinedHeadings = headings.filter((heading) => heading.depth === 2);
 ---
 
 <Layout
@@ -38,30 +40,28 @@ const { Content, headings } = await render(doc);
             />
             <main class="flex flex-1 flex-col gap-5">
                 {
-                    headings.length > 0 && (
+                    outlinedHeadings.length > 0 && (
                         <nav
                             aria-label="Table of contents"
                             class="flex flex-col gap-2 rounded-xl bg-card p-5"
                         >
                             <h2 class="text-lg font-bold">Contents</h2>
                             <ul class="ml-4 list-decimal">
-                                {headings
-                                    .filter((heading) => heading.depth === 2)
-                                    .map((heading) => (
-                                        <li>
-                                            <a
-                                                href={`#${heading.slug}`}
-                                                class="hover:underline"
-                                            >
-                                                {heading.text}
-                                            </a>
-                                        </li>
-                                    ))}
+                                {outlinedHeadings.map((heading) => (
+                                    <li>
+                                        <a
+                                            href={`#${heading.slug}`}
+                                            class="hover:underline"
+                                        >
+                                            {heading.text}
+                                        </a>
+                                    </li>
+                                ))}
                             </ul>
                         </nav>
                     )
                 }
-                <article class="prose max-w-none prose-invert">
+                <article class="prose prose-sm max-w-none prose-invert">
                     <Content />
                 </article>
             </main>
