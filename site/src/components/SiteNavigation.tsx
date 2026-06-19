@@ -2,6 +2,7 @@ import { ChevronDownIcon, EarthIcon } from "lucide-react";
 import { NavigationMenu } from "radix-ui";
 
 import { getDocTypeIcon } from "@/lib/docTypes.ts";
+import { normalisedBaseUrl } from "@/lib/urls.ts";
 
 export interface DocNavGroup {
     type: string;
@@ -12,13 +13,11 @@ export interface DocNavGroup {
 }
 
 interface SiteNavigationProps {
-    homeUrl: string;
     currentPath: string;
     groups: DocNavGroup[];
 }
 
 export default function SiteNavigation({
-    homeUrl,
     currentPath,
     groups,
 }: SiteNavigationProps) {
@@ -32,7 +31,7 @@ export default function SiteNavigation({
                     <NavigationMenu.Link asChild>
                         <a
                             className="mr-2 flex h-9 items-center gap-2 rounded-md px-1 transition-colors outline-none hover:text-muted focus-visible:ring-2 focus-visible:ring-foreground/70"
-                            href={homeUrl}
+                            href={normalisedBaseUrl}
                         >
                             <EarthIcon aria-hidden="true" className="size-6" />
                             <span className="font-bold">Luminous</span>

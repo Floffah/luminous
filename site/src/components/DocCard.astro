@@ -4,6 +4,7 @@ import { Image } from "@unpic/astro";
 import { getEntry } from "astro:content";
 
 import cn from "@/lib/cn.ts";
+import { pathFromBase } from "@/lib/urls.ts";
 
 interface Props {
     id: CollectionEntry<"docs">["id"];
@@ -16,8 +17,6 @@ const doc = await getEntry("docs", id);
 if (!doc) {
     throw new Error(`DocCard could not find a docs entry with id "${id}"`);
 }
-
-const href = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/d/${doc.id}`;
 ---
 
 <a
@@ -25,7 +24,7 @@ const href = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/d/${doc.id}`;
         "relative flex h-24 flex-col justify-end overflow-hidden rounded-xl p-2 transition duration-150 hover:scale-105",
         className,
     )}
-    href={href}
+    href={pathFromBase(`d/${doc.id}`)}
 >
     {
         doc.data.coverImageUrl && (

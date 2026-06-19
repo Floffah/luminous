@@ -5,6 +5,7 @@ import { getCollection } from "astro:content";
 
 import SiteNavigation from "@/components/SiteNavigation.tsx";
 import cn from "@/lib/cn.ts";
+import { pathFromBase } from "@/lib/urls.ts";
 
 interface Props {
     coverImageUrl?: string;
@@ -12,7 +13,6 @@ interface Props {
 }
 
 const { coverImageUrl, class: className } = Astro.props;
-const homeUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/`;
 
 const docs = await getCollection("docs");
 const groupsByType = new Map<string, DocNavGroup>();
@@ -25,7 +25,7 @@ for (const doc of docs) {
 
     group.docs.push({
         title: doc.data.title,
-        href: `${homeUrl}d/${doc.id}`,
+        href: pathFromBase(`d/${doc.id}`),
     });
     groupsByType.set(doc.data.type, group);
 }
@@ -56,7 +56,6 @@ const docGroups = [...groupsByType.values()]
         )
     }
     <SiteNavigation
-        homeUrl={homeUrl}
         currentPath={Astro.url.pathname}
         groups={docGroups}
         client:load

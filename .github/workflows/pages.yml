@@ -37,6 +37,7 @@ jobs:
         with:
           # Optional version of wasm-pack to install(eg. 'v0.9.1', 'latest')
           version: 'latest'
+      - run: just docs::build
       - name: Install, build, and upload your site
         uses: withastro/action@v5
         with:

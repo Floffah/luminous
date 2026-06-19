@@ -1,7 +1,15 @@
+---
+import { pathFromBase } from "@/lib/urls.ts";
+---
+
 <footer class="flex flex-col items-center rounded-xl bg-card p-5 text-center">
     <p class="font-bold">(c) 2026 Ramsay Foy, all rights reserved.</p>
     <p class="text-sm text-muted">
         All content is provided with a prohibitative license, no permission nor
         warranty is given. Content is property of Ramsay Foy solely.
     </p>
+    <a
+        class="mt-2 text-sm text-muted underline"
+        href={pathFromBase("luminous.pdf")}>View this site as a PDF</a
+    >
 </footer>

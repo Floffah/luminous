@@ -1,0 +1,4 @@
+set shell := ["nu", "-c"]
+
+build:
+	typst compile _main.typ ../site/public/luminous.pdf

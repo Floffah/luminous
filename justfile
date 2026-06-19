@@ -1,10 +1,11 @@
 set shell := ["nu", "-c"]
 
 mod site
+mod docs
 
 [parallel]
 dev: site::dev
 
-build: site::build
+build: docs::build site::build
 
 preview: site::preview
