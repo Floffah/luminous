@@ -19,7 +19,7 @@ if (!doc) {
     return new Response(null, { status: 404 });
 }
 
-const { Content } = await render(doc);
+const { Content, headings } = await render(doc);
 ---
 
 <Layout
@@ -36,7 +36,31 @@ const { Content } = await render(doc);
                 coverImageUrl={doc.data.coverImageUrl}
                 class="min-h-64 flex-1 lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)]"
             />
-            <main class="flex-1">
+            <main class="flex flex-1 flex-col gap-5">
+                {
+                    headings.length > 0 && (
+                        <nav
+                            aria-label="Table of contents"
+                            class="flex flex-col gap-2 rounded-xl bg-card p-5"
+                        >
+                            <h2 class="text-lg font-bold">Contents</h2>
+                            <ul class="ml-4 list-decimal">
+                                {headings
+                                    .filter((heading) => heading.depth === 2)
+                                    .map((heading) => (
+                                        <li>
+                                            <a
+                                                href={`#${heading.slug}`}
+                                                class="hover:underline"
+                                            >
+                                                {heading.text}
+                                            </a>
+                                        </li>
+                                    ))}
+                            </ul>
+                        </nav>
+                    )
+                }
                 <article class="prose max-w-none prose-invert">
                     <Content />
                 </article>

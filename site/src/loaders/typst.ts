@@ -53,7 +53,10 @@ export function typstLoader({
                     body: source,
                     digest,
                     filePath: toPosixPath(relative(rootPath, filePath)),
-                    rendered: { html: compiled.html },
+                    rendered: {
+                        html: compiled.html,
+                        metadata: { headings: compiled.headings },
+                    },
                 });
             }
 

@@ -1,3 +1,4 @@
+import type { MarkdownHeading } from "astro";
 import { load } from "cheerio";
 import { Link as LinkIcon } from "lucide-static";
 import { typstToHtml, typstToHtmlWithMetadata } from "typst-wasm";
@@ -5,11 +6,12 @@ import { typstToHtml, typstToHtmlWithMetadata } from "typst-wasm";
 import cn from "@/lib/cn.ts";
 
 export function renderTypst(typst: string) {
-    return modifyHtml(typstToHtml(typst));
+    return modifyHtml(typstToHtml(typst)).html;
 }
 
 export interface CompiledTypst {
     html: string;
+    headings: MarkdownHeading[];
     metadata: Record<string, unknown>;
 }
 
@@ -26,8 +28,11 @@ export function compileTypst(typst: string): CompiledTypst {
         throw new TypeError("the Typst `astro` variable must be a dictionary");
     }
 
+    const rendered = modifyHtml(compiled.html);
+
     return {
-        html: modifyHtml(compiled.html),
+        html: rendered.html,
+        headings: rendered.headings,
         metadata: compiled.metadata,
     };
 }
@@ -38,6 +43,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function modifyHtml(html: string) {
     const $ = load(html, null, false);
+    const headings: MarkdownHeading[] = [];
     const usedIds = new Set(
         $("[id]")
             .map((_, element) => $(element).attr("id"))
@@ -47,19 +53,31 @@ function modifyHtml(html: string) {
 
     $("h1, h2, h3, h4, h5, h6").each((_, heading) => {
         const element = $(heading);
-        if (element.attr("id")) return;
+        const text = element.text().trim();
+        const existingId = element.attr("id");
+        let id = existingId;
 
-        const base = slugify(element.text()) || "heading";
-        let id = base;
-        let suffix = 2;
+        if (!id) {
+            const base = slugify(text) || "heading";
+            id = base;
+            let suffix = 2;
 
-        while (usedIds.has(id)) {
-            id = `${base}-${suffix}`;
-            suffix += 1;
+            while (usedIds.has(id)) {
+                id = `${base}-${suffix}`;
+                suffix += 1;
+            }
+
+            element.attr("id", id);
+            usedIds.add(id);
         }
 
-        element.attr("id", id);
-        usedIds.add(id);
+        headings.push({
+            depth: Number(heading.tagName.slice(1)),
+            slug: id,
+            text,
+        });
+
+        if (existingId) return;
 
         const existingClass = element.attr("class") ?? "";
         element.attr(
@@ -73,7 +91,7 @@ function modifyHtml(html: string) {
         );
     });
 
-    return $.html();
+    return { html: $.html(), headings };
 }
 
 function slugify(value: string) {
