@@ -1,7 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import {
     BuildingIcon,
+    CpuIcon,
     FileQuestionIcon,
+    LandmarkIcon,
     MapPinnedIcon,
     PersonStandingIcon,
     ScrollIcon,
@@ -12,6 +14,8 @@ export const DOC_TYPE_ICONS = {
     Lore: ScrollIcon,
     Organisation: BuildingIcon,
     People: PersonStandingIcon,
+    Governance: LandmarkIcon,
+    Technology: CpuIcon,
 } satisfies Record<string, LucideIcon>;
 
 export function getDocTypeIcon(type: string): LucideIcon {
