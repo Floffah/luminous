@@ -2,6 +2,7 @@
 	title: "Haven",
 	description: "The capital city on planet Emergence in Luminous.",
 	type: "Location",
+	coverImageUrl: "https://images.unsplash.com/photo-1780336473595-9e1c3c990ca0"
 )
 
 = Haven

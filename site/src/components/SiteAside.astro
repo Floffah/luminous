@@ -1,5 +1,6 @@
 ---
 import type { DocNavGroup } from "@/components/SiteNavigation.tsx";
+import { Image } from "@unpic/astro";
 import { getCollection } from "astro:content";
 
 import SiteNavigation from "@/components/SiteNavigation.tsx";
@@ -45,10 +46,12 @@ const docGroups = [...groupsByType.values()]
 >
     {
         coverImageUrl && (
-            <img
+            <Image
                 src={coverImageUrl}
                 alt=""
                 class="absolute inset-0 size-full rounded-xl object-cover"
+                layout="fullWidth"
+                placeholder="blurhash"
             />
         )
     }

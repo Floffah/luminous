@@ -2,7 +2,8 @@
 	title: "Luminous",
 	description: "The self-sovereign nation, Luminous.",
 	type: "Location",
-	aliases: ("The Luminous Ring",)
+	aliases: ("The Luminous Ring",),
+	coverImageUrl: "https://images.unsplash.com/photo-1780336473595-9e1c3c990ca0"
 )
 
 = Luminous

@@ -2,6 +2,7 @@
 	title: "Emergence",
 	description: "The capital planet of Luminous",
 	type: "Location",
+	coverImageUrl: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4",
 )
 
 = Emergence
