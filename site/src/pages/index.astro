@@ -1,10 +1,28 @@
 ---
+import { getCollection } from "astro:content";
+
 import DocCard from "@/components/DocCard.astro";
 import Footer from "@/components/Footer.astro";
 import SiteAside from "@/components/SiteAside.astro";
 import Layout from "@/layouts/Layout.astro";
+import { buildCardLinkIndex, linkCardHtml } from "@/lib/card-links.ts";
+import { pathFromBase } from "@/lib/urls.ts";
 
 import homepage from "./index.typ";
+
+const docs = await getCollection("docs");
+const linkedHomepage = linkCardHtml({
+    html: homepage,
+    sourceId: "__homepage__",
+    index: buildCardLinkIndex(
+        docs.map(({ id, data }) => ({
+            id,
+            title: data.title,
+            aliases: data.aliases,
+        })),
+    ),
+    hrefForId: (id) => pathFromBase(`d/${id}`),
+}).html;
 ---
 
 <Layout>
@@ -16,7 +34,7 @@ import homepage from "./index.typ";
                     coverImageUrl="https://images.unsplash.com/photo-1780336473595-9e1c3c990ca0"
                 />
                 <article class="prose prose-sm prose-invert">
-                    <Fragment set:html={homepage} />
+                    <Fragment set:html={linkedHomepage} />
                 </article>
             </div>
             <aside class="flex-1">

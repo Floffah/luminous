@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { typstEntryId } from "./typst-path.ts";
+import { typstEntryId } from "../lib/typst-path.ts";
 
 describe("typstEntryId", () => {
     test.each([

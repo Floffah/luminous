@@ -11,3 +11,6 @@ build: typst-wasm::build
 
 preview:
 	bun run preview
+
+test:
+	bun run test
