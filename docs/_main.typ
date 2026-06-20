@@ -47,6 +47,7 @@
 #include "technology/index.typ"
 #include "technology/particle-emitter.typ"
 #include "technology/quantum-computation.typ"
+#include "technology/computation.typ"
 #include "technology/interstellar-transit.typ"
 #include "technology/synthetic-humans.typ"
 
