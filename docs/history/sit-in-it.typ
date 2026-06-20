@@ -2,6 +2,7 @@
 	title: "Stabilisation and Normalisation",
 	description: "The period in the Luminous timeline where Earth and Luminous established stable communication and avoided escalation.",
 	type: "Lore",
+	aliases: ("The Stabilisation & Sit In It Phase",),
 )
 
 = Stabilisation and Normalisation

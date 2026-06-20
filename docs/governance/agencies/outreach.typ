@@ -2,6 +2,7 @@
 	title: "Outreach Department",
 	description: "Luminous government agency responsible for researching and recruiting candidates.",
 	type: "Organisation",
+	aliases: ("Outreach",),
 )
 
 = Outreach Department

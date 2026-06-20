@@ -1,7 +1,8 @@
 #let astro = (
-	title: "The Functional Society and Stabilisation Phase",
+	title: "The Functional Society Phase",
 	description: "The period in the Luminous timeline where the society transitioned from a provisional off-world project into a stable, livable human polity.",
 	type: "Lore",
+	aliases: ("The Functional Society and Stabilisation Phase",),
 )
 
 = The Functional Society and Stabilisation Phase

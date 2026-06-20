@@ -2,6 +2,7 @@
 	title: "The Discovery Phase",
 	description: "The period in the Luminous timeline where researchers discovered the technologies that underpin the Luminous world.",
 	type: "Lore",
+	aliases: ("Discovery Phase",),
 )
 
 = The Discovery Phase

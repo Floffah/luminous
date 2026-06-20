@@ -3,6 +3,11 @@
   description: "Computational advances enabled by Luminous material and energy breakthroughs.",
   type: "Technology",
   tags: ("computation", "quantum", "simulation"),
+  aliases: (
+    "solid-state quantum computation",
+    "Quantum computation",
+    "Quantum computers",
+  ),
 )
 
 = Solid-State Quantum Computation

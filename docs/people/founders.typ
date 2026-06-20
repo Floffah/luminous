@@ -3,6 +3,7 @@
   description: "The founding group responsible for withdrawal, containment, and the first institutions of Luminous.",
   type: "People",
   tags: ("founders", "history", "governance"),
+  aliases: ("founders",),
 )
 
 = Founders

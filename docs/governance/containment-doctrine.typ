@@ -3,6 +3,7 @@
   description: "The principle that uncontrolled leakage of Luminous technology is more dangerous than isolating it.",
   type: "Governance",
   tags: ("technology", "earth", "security"),
+  aliases: ("containment doctrine",),
 )
 
 = Containment Doctrine

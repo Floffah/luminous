@@ -2,6 +2,7 @@
 	title: "First Contact and Mutual Recognition",
 	description: "The period in the Luminous timeline where Earth-based governments moved from isolated anomaly assessment to a shared institutional consensus that an external, non-natural organising entity existed and could plausibly be engaged through deliberate communication.",
 	type: "Lore",
+	aliases: ("first contact",),
 )
 
 = First Contact and Mutual Recognition

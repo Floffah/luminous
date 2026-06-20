@@ -9,3 +9,5 @@ dev: site::dev
 build: docs::build site::build
 
 preview: site::preview
+
+test: site::test

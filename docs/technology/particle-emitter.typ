@@ -3,6 +3,7 @@
   description: "The matter-assembly and energy-linked technology at the centre of Luminous.",
   type: "Technology",
   tags: ("particle emitter", "manufacturing", "energy"),
+  aliases: ("particle emitters",),
 )
 
 = Particle Emitter

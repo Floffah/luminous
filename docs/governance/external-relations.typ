@@ -3,6 +3,7 @@
   description: "How Luminous communicates with Earth governments after public acknowledgement.",
   type: "Governance",
   tags: ("earth", "diplomacy", "first contact"),
+  aliases: ("external relations",),
 )
 
 = External Relations
