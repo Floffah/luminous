@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b0xibw555r5gu"]
+
+[ext_resource type="PackedScene" uid="uid://daf7goafbl7sg" path="res://assets/models/shuttle/Shuttle.glb" id="1_nnsk1"]
+
+[node name="Node3D" type="Node3D" unique_id=1848874964]
+
+[node name="blockbench_export" parent="." unique_id=181506937 instance=ExtResource("1_nnsk1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.34360516, 0, -2.1239676)

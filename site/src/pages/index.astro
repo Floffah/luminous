@@ -1,0 +1,94 @@
+---
+import { getCollection } from "astro:content";
+
+import CardLinkGraph from "@/components/CardLinkGraph.astro";
+import DocCard from "@/components/DocCard.astro";
+import Footer from "@/components/Footer.astro";
+import SiteAside from "@/components/SiteAside.astro";
+import Layout from "@/layouts/Layout.astro";
+import { buildCardGraph } from "@/lib/card-graph.ts";
+import { buildCardLinkIndex, linkCardHtml } from "@/lib/card-links.ts";
+import { pathFromBase } from "@/lib/urls.ts";
+
+import homepage from "./index.typ";
+
+const docs = await getCollection("docs");
+const linkedHomepage = linkCardHtml({
+    html: homepage,
+    sourceId: "__homepage__",
+    index: buildCardLinkIndex(
+        docs.map(({ id, data }) => ({
+            id,
+            title: data.title,
+            aliases: data.aliases,
+        })),
+    ),
+    hrefForId: (id) => pathFromBase(`d/${id}`),
+}).html;
+---
+
+<Layout>
+    <div class="flex flex-col gap-5 p-5">
+        <div class="flex min-h-screen flex-col gap-5 lg:flex-row">
+            <div class="flex flex-1 flex-col gap-5">
+                <SiteAside
+                    class="h-48"
+                    coverImageUrl="https://images.unsplash.com/photo-1780336473595-9e1c3c990ca0"
+                />
+                <article class="prose prose-sm prose-invert">
+                    <Fragment set:html={linkedHomepage} />
+                </article>
+                <CardLinkGraph />
+            </div>
+            <aside class="flex-1">
+                <nav class="grid grid-cols-3 gap-2">
+                    <DocCard
+                        id="luminous"
+                        class="col-span-3 bg-indigo-400/80"
+                    />
+                    <DocCard id="society" class="bg-orange-600/80" />
+                    <DocCard id="history" class="bg-orange-600/80" />
+                    <DocCard id="governance" class="bg-orange-600/80" />
+
+                    <DocCard
+                        id="places/emergence"
+                        class="row-span-3 h-auto bg-indigo-400/80"
+                    />
+                    <DocCard id="places/haven" class="bg-indigo-400/80" />
+                    <div class="h-24"></div>
+                    <div class="h-24"></div>
+                    <div class="h-24"></div>
+                    <div class="h-24"></div>
+                    <div class="h-24"></div>
+
+                    <DocCard
+                        id="technology"
+                        class="row-span-3 h-auto bg-indigo-400/80"
+                    />
+                    <DocCard
+                        id="technology/particle-emitter"
+                        class="bg-indigo-400/80"
+                    />
+                    <DocCard
+                        id="technology/quantum-computation"
+                        class="bg-indigo-400/80"
+                    />
+                    <DocCard
+                        id="technology/computation"
+                        class="bg-indigo-400/80"
+                    />
+                    <DocCard
+                        id="technology/interstellar-transit"
+                        class="bg-indigo-400/80"
+                    />
+                    <DocCard
+                        id="technology/synthetic-humans"
+                        class="bg-indigo-400/80"
+                    />
+                </nav>
+            </aside>
+        </div>
+
+        <Footer />
+    </div>
+</Layout>

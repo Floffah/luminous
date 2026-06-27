@@ -1,0 +1,72 @@
+---
+import { getCollection, render } from "astro:content";
+
+import Footer from "@/components/Footer.astro";
+import SiteAside from "@/components/SiteAside.astro";
+import Layout from "@/layouts/Layout.astro";
+
+export async function getStaticPaths() {
+    const posts = await getCollection("docs");
+    return posts.map((doc) => ({
+        params: { id: doc.id },
+        props: { doc },
+    }));
+}
+
+const { doc } = Astro.props;
+
+if (!doc) {
+    return new Response(null, { status: 404 });
+}
+
+const { Content, headings } = await render(doc);
+
+const outlinedHeadings = headings.filter((heading) => heading.depth === 2);
+---
+
+<Layout
+    title={doc.data.title}
+    description={doc.data.description}
+    imageUrl={doc.data.coverImageUrl}
+    openGraphType="article"
+    section={doc.data.type}
+    tags={doc.data.tags}
+>
+    <div class="flex flex-col gap-5 p-5">
+        <div class="flex min-h-screen flex-col gap-5 lg:flex-row">
+            <SiteAside
+                coverImageUrl={doc.data.coverImageUrl}
+                class="min-h-64 flex-1 lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)]"
+            />
+            <main class="flex flex-1 flex-col gap-5">
+                {
+                    outlinedHeadings.length > 0 && (
+                        <nav
+                            aria-label="Table of contents"
+                            class="flex flex-col gap-2 rounded-xl bg-card p-5"
+                        >
+                            <h2 class="text-lg font-bold">Contents</h2>
+                            <ul class="ml-4 list-decimal">
+                                {outlinedHeadings.map((heading) => (
+                                    <li>
+                                        <a
+                                            href={`#${heading.slug}`}
+                                            class="hover:underline"
+                                        >
+                                            {heading.text}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
+                    )
+                }
+                <article class="prose prose-sm max-w-none prose-invert">
+                    <Content />
+                </article>
+            </main>
+        </div>
+
+        <Footer />
+    </div>
+</Layout>

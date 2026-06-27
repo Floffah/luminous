@@ -1,0 +1,63 @@
+---
+import type { DocNavGroup } from "@/components/SiteNavigation.tsx";
+import { Image } from "@unpic/astro";
+import { getCollection } from "astro:content";
+
+import SiteNavigation from "@/components/SiteNavigation.tsx";
+import cn from "@/lib/cn.ts";
+import { pathFromBase } from "@/lib/urls.ts";
+
+interface Props {
+    coverImageUrl?: string;
+    class?: string;
+}
+
+const { coverImageUrl, class: className } = Astro.props;
+
+const docs = await getCollection("docs");
+const groupsByType = new Map<string, DocNavGroup>();
+
+for (const doc of docs) {
+    const group = groupsByType.get(doc.data.type) ?? {
+        type: doc.data.type,
+        docs: [],
+    };
+
+    group.docs.push({
+        title: doc.data.title,
+        href: pathFromBase(`d/${doc.id}`),
+    });
+    groupsByType.set(doc.data.type, group);
+}
+
+const docGroups = [...groupsByType.values()]
+    .sort((a, b) => a.type.localeCompare(b.type))
+    .map((group) => ({
+        ...group,
+        docs: group.docs.sort((a, b) => a.title.localeCompare(b.title)),
+    }));
+---
+
+<aside
+    class:list={cn(
+        "relative flex w-full flex-col rounded-xl bg-card",
+        className,
+    )}
+>
+    {
+        coverImageUrl && (
+            <Image
+                src={coverImageUrl}
+                alt=""
+                class="absolute inset-0 size-full rounded-xl object-cover"
+                layout="fullWidth"
+                placeholder="blurhash"
+            />
+        )
+    }
+    <SiteNavigation
+        currentPath={Astro.url.pathname}
+        groups={docGroups}
+        client:load
+    />
+</aside>

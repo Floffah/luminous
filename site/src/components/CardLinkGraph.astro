@@ -1,0 +1,404 @@
+---
+import { getCollection } from "astro:content";
+import { schemeObservable10 } from "d3";
+
+import { buildCardGraph } from "@/lib/card-graph.ts";
+import { pathFromBase } from "@/lib/urls.ts";
+
+const docs = await getCollection("docs");
+const graph = buildCardGraph(docs, (id) => pathFromBase(`d/${id}`));
+const types = [...new Set(graph.nodes.map((node) => node.type))].sort();
+const colourByType = new Map(
+    types.map((type, index) => [
+        type,
+        schemeObservable10[index % schemeObservable10.length],
+    ]),
+);
+const serialisedGraph = JSON.stringify(graph).replaceAll("<", "\\u003c");
+---
+
+<section data-card-link-graph>
+    <svg
+        class="h-128 w-full cursor-grab overflow-hidden rounded-lg bg-background/35 active:cursor-grabbing"
+        role="img"
+        aria-label="Interactive map of links between documentation cards"></svg>
+
+    <div
+        class="mt-3 flex flex-wrap justify-center gap-x-4"
+        aria-label="Card types"
+    >
+        {
+            types.map((type) => (
+                <span class="flex items-center gap-1.5 text-xs text-muted">
+                    <span
+                        class="size-2.5 rounded-full"
+                        style={`background-color: ${colourByType.get(type)}`}
+                    />
+                    {type}
+                </span>
+            ))
+        }
+    </div>
+
+    <ul class="sr-only">
+        {
+            graph.nodes.map((node) => (
+                <li>
+                    <a href={node.href}>{node.title}</a>
+                </li>
+            ))
+        }
+    </ul>
+
+    <script
+        type="application/json"
+        data-card-link-graph-data
+        set:html={serialisedGraph}
+    />
+</section>
+
+<script>
+    import type {
+        CardGraphData,
+        CardGraphEdge,
+        CardGraphNode,
+    } from "@/lib/card-graph.ts";
+    import {
+        drag,
+        forceCenter,
+        forceCollide,
+        forceLink,
+        forceManyBody,
+        forceSimulation,
+        schemeObservable10,
+        select,
+        zoom,
+        zoomIdentity,
+    } from "d3";
+
+    interface SimNode extends CardGraphNode {
+        x?: number;
+        y?: number;
+        fx?: number | null;
+        fy?: number | null;
+    }
+
+    interface SimEdge extends Omit<CardGraphEdge, "source" | "target"> {
+        source: string | SimNode;
+        target: string | SimNode;
+    }
+
+    document
+        .querySelectorAll<HTMLElement>("[data-card-link-graph]")
+        .forEach((root, graphIndex) => {
+            const svgElement = root.querySelector<SVGSVGElement>("svg");
+            const dataElement = root.querySelector<HTMLScriptElement>(
+                "[data-card-link-graph-data]",
+            );
+            if (!svgElement || !dataElement?.textContent) return;
+
+            const graph = JSON.parse(dataElement.textContent) as CardGraphData;
+            const nodes: SimNode[] = graph.nodes.map((node) => ({ ...node }));
+            const edges: SimEdge[] = graph.edges.map((edge) => ({ ...edge }));
+            const neighbours = new Map<string, Set<string>>();
+            for (const node of nodes) {
+                neighbours.set(node.id, new Set([node.id]));
+            }
+            for (const edge of graph.edges) {
+                neighbours.get(edge.source)?.add(edge.target);
+                neighbours.get(edge.target)?.add(edge.source);
+            }
+
+            const types = [
+                ...new Set(graph.nodes.map((node) => node.type)),
+            ].sort();
+            const colourByType = new Map(
+                types.map((type, index) => [
+                    type,
+                    schemeObservable10[index % schemeObservable10.length],
+                ]),
+            );
+
+            const svg = select(svgElement);
+            const width = Math.max(svgElement.clientWidth, 320);
+            const height = Math.max(svgElement.clientHeight, 420);
+            svg.attr("viewBox", `0 0 ${width} ${height}`);
+
+            const radius = (node: SimNode) =>
+                7 +
+                Math.min(
+                    7,
+                    Math.sqrt(node.incomingLinks + node.outgoingLinks) * 2,
+                );
+            const clipIdByNodeId = new Map(
+                nodes.map((node, index) => [
+                    node.id,
+                    `card-link-graph-${graphIndex}-clip-${index}`,
+                ]),
+            );
+            const definitions = svg.append("defs");
+            definitions
+                .selectAll("clipPath")
+                .data(nodes)
+                .join("clipPath")
+                .attr("id", (node) => clipIdByNodeId.get(node.id)!)
+                .append("rect")
+                .attr("x", (node) => -radius(node))
+                .attr("y", (node) => -radius(node))
+                .attr("width", (node) => radius(node) * 2)
+                .attr("height", (node) => radius(node) * 2)
+                .attr("rx", (node) => radius(node) * 0.35);
+
+            const scene = svg.append("g");
+            const edgeSelection = scene
+                .append("g")
+                .attr("aria-hidden", "true")
+                .selectAll("line")
+                .data(edges)
+                .join("line")
+                .attr("stroke", "currentColor")
+                .attr("stroke-opacity", 0.22)
+                .attr("stroke-width", (edge) =>
+                    Math.min(3, 0.75 + Math.log2(edge.count + 1)),
+                );
+
+            const nodeSelection = scene
+                .append("g")
+                .selectAll<SVGAElement, SimNode>("a")
+                .data(nodes)
+                .join("a")
+                .attr("href", (node) => node.href)
+                .attr(
+                    "aria-label",
+                    (node) =>
+                        `${node.title}, ${node.incomingLinks} incoming and ${node.outgoingLinks} outgoing links`,
+                )
+                .attr("class", "outline-none");
+
+            nodeSelection
+                .append("rect")
+                .attr("x", (node) => -radius(node))
+                .attr("y", (node) => -radius(node))
+                .attr("width", (node) => radius(node) * 2)
+                .attr("height", (node) => radius(node) * 2)
+                .attr("rx", (node) => radius(node) * 0.35)
+                .attr("fill", (node) => colourByType.get(node.type) ?? "#999");
+            nodeSelection
+                .filter((node) => Boolean(node.coverImageUrl))
+                .append("image")
+                .attr("href", (node) => node.coverImageUrl!)
+                .attr("x", (node) => -radius(node))
+                .attr("y", (node) => -radius(node))
+                .attr("width", (node) => radius(node) * 2)
+                .attr("height", (node) => radius(node) * 2)
+                .attr("preserveAspectRatio", "xMidYMid slice")
+                .attr("pointer-events", "none")
+                .attr(
+                    "clip-path",
+                    (node) => `url(#${clipIdByNodeId.get(node.id)})`,
+                )
+                .on("error", function () {
+                    this.remove();
+                });
+            nodeSelection
+                .append("rect")
+                .attr("x", (node) => -radius(node))
+                .attr("y", (node) => -radius(node))
+                .attr("width", (node) => radius(node) * 2)
+                .attr("height", (node) => radius(node) * 2)
+                .attr("rx", (node) => radius(node) * 0.35)
+                .attr("fill", "none")
+                .attr("stroke", (node) => colourByType.get(node.type) ?? "#999")
+                .attr("stroke-width", 2);
+            const linkCount = (node: SimNode) =>
+                node.incomingLinks + node.outgoingLinks;
+            const labelSelection = nodeSelection
+                .append("g")
+                .attr("data-card-node-label", "")
+                .attr(
+                    "transform",
+                    (node) => `translate(0, ${radius(node) + 6})`,
+                )
+                .attr("opacity", (node) => (linkCount(node) <= 1 ? 0 : 1))
+                .attr("pointer-events", "none");
+            const labelTextSelection = labelSelection
+                .append("text")
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "hanging")
+                .attr("fill", (node) =>
+                    linkCount(node) >= 6 || linkCount(node) <= 1
+                        ? "currentColor"
+                        : "var(--color-muted)",
+                )
+                .attr("fill-opacity", (node) =>
+                    linkCount(node) >= 6 || linkCount(node) <= 1 ? 1 : 0.5,
+                )
+                .attr("font-size", (node) =>
+                    linkCount(node) >= 6 || linkCount(node) <= 1 ? 10 : 8,
+                )
+                .attr("font-weight", (node) =>
+                    linkCount(node) >= 6 || linkCount(node) <= 1 ? 700 : 500,
+                )
+                .text((node) => node.title);
+            labelTextSelection.each(function (node) {
+                if (linkCount(node) > 1 && linkCount(node) < 6) return;
+
+                const bounds = this.getBBox();
+                select(this.parentNode as SVGGElement)
+                    .insert("rect", "text")
+                    .attr("x", bounds.x - 4)
+                    .attr("y", bounds.y - 2)
+                    .attr("width", bounds.width + 8)
+                    .attr("height", bounds.height + 4)
+                    .attr("rx", 3)
+                    .attr("fill", "var(--color-card)")
+                    .attr("fill-opacity", 0.95);
+            });
+            nodeSelection
+                .append("title")
+                .text(
+                    (node) =>
+                        `${node.title} · ${node.incomingLinks} incoming · ${node.outgoingLinks} outgoing`,
+                );
+
+            const highlight = (id: string | null) => {
+                const visible = id ? neighbours.get(id) : null;
+                nodeSelection.attr("opacity", (node) =>
+                    !visible || visible.has(node.id) ? 1 : 0.16,
+                );
+                edgeSelection
+                    .attr("stroke-opacity", (edge) => {
+                        const source =
+                            typeof edge.source === "string"
+                                ? edge.source
+                                : edge.source.id;
+                        const target =
+                            typeof edge.target === "string"
+                                ? edge.target
+                                : edge.target.id;
+                        return !id
+                            ? 0.22
+                            : source === id || target === id
+                              ? 0.8
+                              : 0.04;
+                    })
+                    .attr("stroke-width", (edge) => {
+                        const source =
+                            typeof edge.source === "string"
+                                ? edge.source
+                                : edge.source.id;
+                        const target =
+                            typeof edge.target === "string"
+                                ? edge.target
+                                : edge.target.id;
+                        const base = Math.min(
+                            3,
+                            0.75 + Math.log2(edge.count + 1),
+                        );
+                        return id && (source === id || target === id)
+                            ? base + 1
+                            : base;
+                    });
+            };
+            const showEphemeralLabel = (
+                element: SVGAElement,
+                node: SimNode,
+                visible: boolean,
+            ) => {
+                if (linkCount(node) > 1) return;
+
+                select(element)
+                    .select("[data-card-node-label]")
+                    .attr("opacity", visible ? 1 : 0);
+            };
+            nodeSelection
+                .on("mouseenter", (event, node) => {
+                    highlight(node.id);
+                    showEphemeralLabel(event.currentTarget, node, true);
+                })
+                .on("mouseleave", (event, node) => {
+                    highlight(null);
+                    showEphemeralLabel(event.currentTarget, node, false);
+                })
+                .on("focus", (event, node) => {
+                    highlight(node.id);
+                    showEphemeralLabel(event.currentTarget, node, true);
+                })
+                .on("blur", (event, node) => {
+                    highlight(null);
+                    showEphemeralLabel(event.currentTarget, node, false);
+                });
+
+            const linkForce = forceLink<SimNode, SimEdge>(edges)
+                .id((node) => node.id)
+                .distance((edge) => Math.max(55, 105 - edge.count * 6))
+                .strength((edge) => Math.min(0.8, 0.22 + edge.count * 0.09));
+            const simulation = forceSimulation(nodes)
+                .force("link", linkForce)
+                .force("charge", forceManyBody().strength(-190))
+                .force("center", forceCenter(width / 2, height / 2))
+                .force(
+                    "collision",
+                    forceCollide<SimNode>().radius((node) => radius(node) + 24),
+                )
+                .on("tick", () => {
+                    edgeSelection
+                        .attr("x1", (edge) => (edge.source as SimNode).x ?? 0)
+                        .attr("y1", (edge) => (edge.source as SimNode).y ?? 0)
+                        .attr("x2", (edge) => (edge.target as SimNode).x ?? 0)
+                        .attr("y2", (edge) => (edge.target as SimNode).y ?? 0);
+                    nodeSelection.attr(
+                        "transform",
+                        (node) => `translate(${node.x ?? 0},${node.y ?? 0})`,
+                    );
+                });
+
+            nodeSelection.call(
+                drag<SVGAElement | HTMLAnchorElement, SimNode>()
+                    .on("start", (event, node) => {
+                        if (!event.active) {
+                            simulation.alphaTarget(0.2).restart();
+                        }
+                        node.fx = node.x;
+                        node.fy = node.y;
+                    })
+                    .on("drag", (event, node) => {
+                        node.fx = event.x;
+                        node.fy = event.y;
+                    })
+                    .on("end", (event, node) => {
+                        if (!event.active) simulation.alphaTarget(0);
+                        node.fx = null;
+                        node.fy = null;
+                    }),
+            );
+
+            const zoomBehaviour = zoom<SVGSVGElement, unknown>()
+                .scaleExtent([0.35, 4])
+                .on("zoom", (event) =>
+                    scene.attr("transform", event.transform),
+                );
+            svg.call(zoomBehaviour);
+
+            simulation.on("end.fit", () => {
+                const bounds = scene.node()?.getBBox();
+                if (!bounds || bounds.width === 0 || bounds.height === 0)
+                    return;
+                const scale = Math.min(
+                    1.35,
+                    0.88 /
+                        Math.max(bounds.width / width, bounds.height / height),
+                );
+                const transform = zoomIdentity
+                    .translate(width / 2, height / 2)
+                    .scale(scale)
+                    .translate(
+                        -(bounds.x + bounds.width / 2),
+                        -(bounds.y + bounds.height / 2),
+                    );
+                svg.transition()
+                    .duration(350)
+                    .call(zoomBehaviour.transform, transform);
+            });
+        });
+</script>
